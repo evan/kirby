@@ -1,6 +1,4 @@
-#!/usr/bin/env ruby
-
-%w[rubygems open3 daemons socket singleton open-uri cgi pathname hpricot yaml net/https].map{|s| require s}
+%w[open3 daemons socket singleton open-uri cgi pathname hpricot yaml net/https].map{|s| require s}
 
 =begin rdoc
 Run <tt>kirby.rb [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
@@ -19,7 +17,7 @@ In-channel commands:
 class Kirby
   include Singleton
 
-  PATH = Pathname.new(__FILE__).dirname.realpath.to_s
+  PATH = Pathname.new(".").dirname.realpath.to_s
   STORE = PATH + '/kirby.repositories'
   PIDFILE = PATH + '/kirby.pid'
   
@@ -132,14 +130,5 @@ class Kirby
     end
   end
   
-end
-
-pid = open(PIDFILE).gets.chomp rescue nil
-
-if !pid or `ps #{pid}`.split("\n").size < 2
-  puts "Starting"
-  Daemons.daemonize if ARGV[0] == '-d'  #:ontop => true
-  open(Kirby::PIDFILE, 'w') {|f| f.puts $$}
-  Kirby.instance.restart
 end
 

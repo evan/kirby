@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'kirby'
+
+pid = open(Kirby::PIDFILE).gets.chomp rescue nil
+
+if !pid or `ps #{pid}`.split("\n").size < 2
+  puts "Starting"
+  Daemons.daemonize if ARGV[0] == '-d'  #:ontop => true
+  open(Kirby::PIDFILE, 'w') {|f| f.puts $$}
+  Kirby.instance.restart
+end
