@@ -24,9 +24,14 @@ Kirby is considered feature-locked.
 
 == Usage
 
-Run <tt>kirby.rb [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
+Run <tt>kirby [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
 
-See the Kirby class for parameters and commands.
+Optional parameters:
+<tt>-d</tt>:: Daemonize.
+<tt>-no-d</tt>:: Don't daemonize.
+<tt>--silent</tt>:: Never speak, even for errors.
+
+See the Kirby class for commands.
 
 == Crontab example
 

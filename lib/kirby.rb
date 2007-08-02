@@ -1,13 +1,6 @@
 %w[open3 daemons socket singleton open-uri cgi pathname hpricot yaml net/https].map{|s| require s}
 
 =begin rdoc
-Run <tt>kirby.rb [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
-
-Optional parameters:
-<tt>-d</tt>:: Daemonize.
-<tt>-no-d</tt>:: Don't daemonize.
-<tt>--silent</tt>:: Never speak, even for errors.
-
 In-channel commands:
 <tt>>> [string of code]</tt>:: Evaluate some Ruby code.
 <tt>reset_irb</tt>:: Reset the <tt>irb</tt> session.
@@ -42,8 +35,6 @@ class Kirby
     write "NICK #{NICK}"
     write "JOIN #{CHANNEL}"
   end
-  
-  private
   
   # The event loop. Waits for socket traffic, and then responds to it. The server sends <tt>PING</tt> every 3 minutes, which means we don't need a separate thread to check for svn updates. All we do is wake on ping (or channel talking).
   def listen

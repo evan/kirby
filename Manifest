@@ -3,5 +3,5 @@
 ./Manifest
 ./README
 ./Rakefile
-./bin/kirby.rb
+./bin/kirby
 ./lib/kirby.rb
