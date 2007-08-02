@@ -1,14 +1,48 @@
---> kirby (n=kirby@63.76.232.192) has joined #kirby-dev
-<evn> kirby: hi
-<kirby> Usage: '>> CODE'. Say 'reset_irb' for a clean session.
-<evn> >> a = %w(read eval print)
-<kirby> => ["read", "eval", "print"]
-<evn> >> 3.times {puts a[rand(a.size)]}
-<kirby> read
-<kirby> print
-<kirby> eval
-<kirby> => 3
-<evn> reset_irb
-<kirby> Began new irb session
-<evn> >> a
-<kirby> NameError: undefined local variable or method `a' for main:Object
+
+Kirby
+
+A super-clean IRC bot with sandboxed Ruby evaluation, svn watching, and link-logging to del.icio.us.
+
+== License
+
+Copyright 2007 Cloudburst, LLC. See included LICENSE file.
+
+== Features
+
+* <tt>irb</tt>-like interface
+* safe, sandboxed Ruby environment
+* svn repository commit watching
+* silent del.icio.us link saving
+* tolerable channel fault recovery
+
+Kirby is considered feature-locked. 
+
+== Requirements
+
+* <tt>daemons</tt> gem
+* <tt>hpricot</tt> gem
+
+== Usage
+
+Run <tt>kirby.rb [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
+
+Optional parameters:
+<tt>-d</tt>:: Daemonize
+<tt>-no-d</tt>:: Don't daemonize
+<tt>--silent</tt>:: Never speak, even for errors
+
+In-channel commands:
+<tt>>> [string of code]</tt>:: evaluate some Ruby code
+<tt>reset_irb</tt>:: Reset the <tt>irb</tt> session
+<tt>add_svn [repository_url]</tt>:: Watch an svn repository for changes
+
+== Crontab example
+
+You can use a crontask to keep Kirby alive at all times.
+
+  * * * * * /path/to/kirby.rb [options...] > /dev/null 2>&1 
+
+== Further resources
+
+* http://blog.evanweaver.com/articles/2007/01/02/a-ruby-eval-bot-for-irc-kirby
+* http://blog.evanweaver.com/pages/code#kirby

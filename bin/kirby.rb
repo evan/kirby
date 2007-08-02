@@ -1,12 +1,5 @@
 #!/usr/bin/env ruby
 
-# An IRC eval bot for Ruby, by Evan Weaver
-# http://blog.evanweaver.com/articles/2007/01/02/a-ruby-eval-bot-for-irc-kirby
-# Copyright 2007 Cloudburst, LLC. See included LICENSE file.
-# Version 3
-
-# * * * * * /path/to/kirby.rb [-d|-no-d] nick channel server delicious_username delicious_password --silent 2>&1 > /dev/null
-
 %w[rubygems open3 daemons socket singleton open-uri cgi pathname hpricot yaml net/https].map{|s| require s}
 
 NICK = (ARGV[1] or "kirby-dev")
@@ -44,7 +37,7 @@ class Kirby
           if msg = line[/ PRIVMSG #{CHANNEL} \:(.+)/, 1]
             case msg
               when /^>>\s*(.+)/ then try $1.chop
-              when /^#{NICK}/ then say "Usage: '>> CODE'. Say 'reset_irb' for a clean session."
+              when /^#{NICK}/ then say "Usage: '>> CODE'. Say 'reset_irb' for a clean session. Say 'add_svn [repository_url]' to watch an svn repository."
               when /^reset_irb/ then reset_irb
               when /^add_svn (.+?)(\s|\r|\n|$)/ then $store[$1] = 0 and say $store.inspect
             end unless SILENT
