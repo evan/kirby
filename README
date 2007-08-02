@@ -1,0 +1,14 @@
+--> kirby (n=kirby@63.76.232.192) has joined #kirby-dev
+<evn> kirby: hi
+<kirby> Usage: '>> CODE'. Say 'reset_irb' for a clean session.
+<evn> >> a = %w(read eval print)
+<kirby> => ["read", "eval", "print"]
+<evn> >> 3.times {puts a[rand(a.size)]}
+<kirby> read
+<kirby> print
+<kirby> eval
+<kirby> => 3
+<evn> reset_irb
+<kirby> Began new irb session
+<evn> >> a
+<kirby> NameError: undefined local variable or method `a' for main:Object
