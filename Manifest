@@ -1,6 +1,6 @@
 ./CHANGELOG
 ./LICENSE
+./Manifest
 ./README
 ./Rakefile
 ./bin/kirby.rb
-./Manifest

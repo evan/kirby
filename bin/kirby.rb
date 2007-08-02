@@ -9,9 +9,12 @@ DELICIOUS_USER, DELICIOUS_PASS = ARGV[4], ARGV[5]
 SILENT = ARGV[6] == "--silent"
 UML_EVAL = ARGV[7] == "--uml"
 
+# The Kirby object. See README.
+
 class Kirby
   include Singleton
-    
+  
+  # Connect and reconnect to the server  
   def restart
     $store = (YAML.load_file STORE rescue {})
     @socket.close if @socket
@@ -19,6 +22,7 @@ class Kirby
     listen
   end
   
+  # Connect to the server
   def connect
     @socket = TCPSocket.new(SERVER, 6667)
     write "USER #{[NICK]*3*" "} :#{NICK}"
@@ -26,6 +30,7 @@ class Kirby
     write "JOIN #{CHANNEL}"
   end
   
+  # The event loop. Waits for socket traffic, and then responds to it. The server sends <tt>PING</tt> every 3 minutes, which means we don't need a separate thread to check for svn updates. All we do is wake on ping (or channel talking).
   def listen
     @socket.each do |line|
 #      puts "GOT: #{line.inspect}"
@@ -47,22 +52,26 @@ class Kirby
     end
   end
   
+  # Send a raw string to the server.
   def write s
     raise RuntimeError, "No socket" unless @socket
     @socket.puts s += "\r\n"
 #    puts "WROTE: #{s.inspect}"
   end
   
+  # Eval a piece of code in the <tt>irb</tt> environment.
   def try s
     reset_irb unless $session
     try_eval(s).select{|e| e !~ /^\s+from .+\:\d+(\:|$)/}.each {|e| say e} rescue say "session error"
   end
   
+  # Say something in the channel.
   def say s
     write "PRIVMSG #{CHANNEL} :#{s[0..450]}"
     sleep 1
   end
     
+  # Get a new <tt>irb</tt> session.
   def reset_irb
     say "Began new irb session"
     if UML_EVAL
@@ -73,6 +82,7 @@ class Kirby
     end
   end
   
+  # Inner loop of the try method.
   def try_eval s
     reset_irb and return [] if s.strip == "exit"
     if UML_EVAL
@@ -88,6 +98,7 @@ class Kirby
     end
   end
   
+  # Look for svn changes.
   def poll
     return unless (Time.now - $last_poll > 15 rescue true)
     $last_poll = Time.now    
@@ -100,6 +111,7 @@ class Kirby
     File.open(STORE, 'w') {|f| f.puts YAML.dump($store)}
   end
   
+  # Post a url to the del.icio.us account.
   def post url
     query = {:url => url,
       :description => (((Hpricot(open(url))/:title).first.innerHTML or url) rescue url),
