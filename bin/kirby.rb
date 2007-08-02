@@ -2,17 +2,32 @@
 
 %w[rubygems open3 daemons socket singleton open-uri cgi pathname hpricot yaml net/https].map{|s| require s}
 
-NICK = (ARGV[1] or "kirby-dev")
-CHANNEL = ("#" + (ARGV[2] or "kirby-dev"))
-SERVER = (ARGV[3] or "irc.freenode.org")
-DELICIOUS_USER, DELICIOUS_PASS = ARGV[4], ARGV[5]
-SILENT = ARGV[6] == "--silent"
-UML_EVAL = ARGV[7] == "--uml"
+=begin rdoc
+Run <tt>kirby.rb [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
 
-# The Kirby object. See README.
+Optional parameters:
+<tt>-d</tt>:: Daemonize.
+<tt>-no-d</tt>:: Don't daemonize.
+<tt>--silent</tt>:: Never speak, even for errors.
+
+In-channel commands:
+<tt>>> [string of code]</tt>:: Evaluate some Ruby code.
+<tt>reset_irb</tt>:: Reset the <tt>irb</tt> session.
+<tt>add_svn [repository_url]</tt>:: Watch an svn repository for changes.
+=end
 
 class Kirby
   include Singleton
+
+  PATH = Pathname.new(__FILE__).dirname.realpath.to_s
+  STORE = PATH + '/kirby.repositories'
+  PIDFILE = PATH + '/kirby.pid'
+  
+  NICK = (ARGV[1] or "kirby-dev")
+  CHANNEL = ("#" + (ARGV[2] or "kirby-dev"))
+  SERVER = (ARGV[3] or "irc.freenode.org")
+  DELICIOUS_USER, DELICIOUS_PASS = ARGV[4], ARGV[5]
+  SILENT = ARGV[6] == "--silent"
   
   # Connect and reconnect to the server  
   def restart
@@ -22,13 +37,15 @@ class Kirby
     listen
   end
   
-  # Connect to the server
+  # Connect to the IRC server.
   def connect
     @socket = TCPSocket.new(SERVER, 6667)
     write "USER #{[NICK]*3*" "} :#{NICK}"
     write "NICK #{NICK}"
     write "JOIN #{CHANNEL}"
   end
+  
+  private
   
   # The event loop. Waits for socket traffic, and then responds to it. The server sends <tt>PING</tt> every 3 minutes, which means we don't need a separate thread to check for svn updates. All we do is wake on ping (or channel talking).
   def listen
@@ -74,28 +91,15 @@ class Kirby
   # Get a new <tt>irb</tt> session.
   def reset_irb
     say "Began new irb session"
-    if UML_EVAL
-      $session.map{|io| io.close} if $session
-      $session = Open3.popen3("/usr/local/bin/irb -f -r rubygems --noprompt --noreadline --back-trace-limit 1 2>&1")[0..1]
-    else
-      $session = try_eval("!INIT!IRB!")
-    end
+    $session = try_eval("!INIT!IRB!")
   end
   
   # Inner loop of the try method.
   def try_eval s
     reset_irb and return [] if s.strip == "exit"
-    if UML_EVAL
-      $session.first.puts s
-      result = []
-      result << $session.last.readline while select([$session.last],nil,nil,1)
-      (result[-1] = "=> " + result[-1]) if result[-1] && result[-1] !~ /^\s+from/ # ugh
-      result[1..-1]
-    else
-      result = open("http://tryruby.hobix.com/irb?cmd=#{CGI.escape(s)}", 
-              {'Cookie' => "_session_id=#{$session}"}).read
-      result[/^Your session has been closed/] ? (reset_irb and try_eval s) : result.split("\n")
-    end
+    result = open("http://tryruby.hobix.com/irb?cmd=#{CGI.escape(s)}", 
+            {'Cookie' => "_session_id=#{$session}"}).read
+    result[/^Your session has been closed/] ? (reset_irb and try_eval s) : result.split("\n")
   end
   
   # Look for svn changes.
@@ -130,15 +134,12 @@ class Kirby
   
 end
 
-PATH = Pathname.new(__FILE__).dirname.realpath.to_s
-STORE = PATH + '/kirby.repositories'
-PIDFILE = PATH + '/kirby.pid'
 pid = open(PIDFILE).gets.chomp rescue nil
 
 if !pid or `ps #{pid}`.split("\n").size < 2
   puts "Starting"
   Daemons.daemonize if ARGV[0] == '-d'  #:ontop => true
-  open(PIDFILE, 'w') {|f| f.puts $$}
+  open(Kirby::PIDFILE, 'w') {|f| f.puts $$}
   Kirby.instance.restart
 end
 

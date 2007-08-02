@@ -26,15 +26,7 @@ Kirby is considered feature-locked.
 
 Run <tt>kirby.rb [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
 
-Optional parameters:
-<tt>-d</tt>:: Daemonize
-<tt>-no-d</tt>:: Don't daemonize
-<tt>--silent</tt>:: Never speak, even for errors
-
-In-channel commands:
-<tt>>> [string of code]</tt>:: evaluate some Ruby code
-<tt>reset_irb</tt>:: Reset the <tt>irb</tt> session
-<tt>add_svn [repository_url]</tt>:: Watch an svn repository for changes
+See the Kirby class for parameters and commands.
 
 == Crontab example
 
