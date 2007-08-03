@@ -15,6 +15,6 @@ Echoe.new("kirby", `cat CHANGELOG`[/^v([\d\.]+)\. /, 1]) do |p|
   p.need_tar = false
   p.need_tar_gz = true  
   
-  p.rdoc_pattern = /\.\/bin|\.\/lib|README|CHANGELOG|LICENSE/
+  p.rdoc_pattern = /bin|lib|README|CHANGELOG|LICENSE/
     
 end
