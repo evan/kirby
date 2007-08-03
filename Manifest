@@ -1,7 +1,7 @@
-./CHANGELOG
-./LICENSE
-./Manifest
-./README
-./Rakefile
-./bin/kirby
-./lib/kirby.rb
+lib/kirby.rb
+bin/kirby
+Rakefile
+README
+Manifest
+LICENSE
+CHANGELOG
