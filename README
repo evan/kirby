@@ -37,7 +37,7 @@ See the Kirby class for commands.
 
 You can use a crontask to keep Kirby alive at all times.
 
-  * * * * * /path/to/kirby.rb [options...] > /dev/null 2>&1 
+  * * * * * /path/to/kirby [options...] > /dev/null 2>&1 
 
 == Further resources
 
