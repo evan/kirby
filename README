@@ -41,5 +41,5 @@ You can use a crontask to keep Kirby alive at all times.
 
 == Further resources
 
-* http://blog.evanweaver.com/articles/2007/01/02/a-ruby-eval-bot-for-irc-kirby
 * http://blog.evanweaver.com/pages/code#kirby
+* http://rubyforge.org/forum/forum.php?forum_id=13984
