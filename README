@@ -17,10 +17,9 @@ Copyright 2007 Cloudburst, LLC. See included LICENSE file.
 
 Kirby is considered feature-locked. 
 
-== Requirements
+== Installation
 
-* <tt>daemons</tt> gem
-* <tt>hpricot</tt> gem
+  sudo gem install kirby
 
 == Usage
 
