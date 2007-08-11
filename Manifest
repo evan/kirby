@@ -1,7 +1,5 @@
 lib/kirby.rb
 bin/kirby
-Rakefile
 README
-Manifest
 LICENSE
 CHANGELOG
