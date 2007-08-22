@@ -36,7 +36,7 @@ See the Kirby class for commands.
 
 You can use a crontask to keep Kirby alive at all times.
 
-  * * * * * /path/to/kirby [options...] > /dev/null 2>&1 
+  * * * * * bash -c 'cd /working/directory; kirby [options...] &> /dev/null' 
 
 == Reporting problems
 
