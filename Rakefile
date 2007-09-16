@@ -12,4 +12,5 @@ Echoe.new("kirby", `cat CHANGELOG`[/^v([\d\.]+)\. /, 1]) do |p|
 
   p.extra_deps = ["hpricot", "daemons"]  
   p.rdoc_pattern = /bin|lib|README|CHANGELOG|LICENSE/    
+  p.require_signed = true
 end
