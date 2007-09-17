@@ -6,7 +6,7 @@ Echoe.new("kirby", `cat CHANGELOG`[/^v([\d\.]+)\. /, 1]) do |p|
   p.name = "kirby"
   p.rubyforge_name = "fauna"
   p.description = p.summary = "A super-clean IRC bot with sandboxed Ruby evaluation, svn watching, and link-logging to del.icio.us."
-  p.url = "http://blog.evanweaver.com/pages/code#kirby"
+  p.url = "http://blog.evanweaver.com/files/doc/fauna/kirby/"
   p.docs_host = "blog.evanweaver.com:~/www/bax/public/files/doc/"
   p.changes = `cat CHANGELOG`[/^v([\d\.]+\. .*)/, 1]
 
