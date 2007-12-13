@@ -12,6 +12,7 @@ class Kirby
 
   PATH = Pathname.new(".").dirname.realpath.to_s
   STORE = PATH + '/kirby.repositories'
+  ATOM  = PATH + '/kirby.atoms'
   PIDFILE = PATH + '/kirby.pid'
   
   NICK = (ARGV[1] or "kirby-dev")
@@ -23,6 +24,7 @@ class Kirby
   # Connect and reconnect to the server  
   def restart
     $store = (YAML.load_file STORE rescue {})
+    $atom  = (YAML.load_file ATOM rescue {})
     @socket.close if @socket
     connect
     listen
@@ -48,9 +50,10 @@ class Kirby
           if msg = line[/ PRIVMSG #{CHANNEL} \:(.+)/, 1]
             case msg
               when /^>>\s*(.+)/ then try $1.chop
-              when /^#{NICK}/ then say "Usage: '>> CODE'. Say 'reset_irb' for a clean session. Say 'add_svn [repository_url]' to watch an svn repository."
+              when /^#{NICK}/ then say "Usage: '>> CODE'. Say 'reset_irb' for a clean session. Say 'add_svn [repository_url]' to watch an svn repository and add_atom [atom_feed_url] to watch an atom feed"
               when /^reset_irb/ then reset_irb
               when /^add_svn (.+?)(\s|\r|\n|$)/ then $store[$1] = 0 and say $store.inspect
+              when /^add_atom (.+?)(\s|\r|\n|$)/ then $atom[$1] = '' and say $atom.inspect
             end unless SILENT
             post($1) if DELICIOUS_PASS and msg =~ /(http:\/\/.*?)(\s|\r|\n|$)/ 
           end
@@ -102,6 +105,16 @@ class Kirby
       end rescue nil
     end
     File.open(STORE, 'w') {|f| f.puts YAML.dump($store)}
+    
+    $atom.each do |feed, last|
+      begin
+        e = (Hpricot(open(feed))/:entry).first
+        $atom[feed] = link = e.at("link")['href']
+        say "#{(e/:title).text} by #{((e/:author)/:name).text} : #{link}" unless link == last
+      rescue
+      end
+    end
+    File.open(ATOM, 'w') {|f| f.puts YAML.dump($atom)}
   end
   
   # Post a url to the del.icio.us account.
