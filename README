@@ -13,7 +13,7 @@ The public certificate for this gem is at http://rubyforge.org/frs/download.php/
 
 * <tt>irb</tt>-like interface
 * safe, sandboxed Ruby environment
-* svn repository commit watching
+* svn and git-atom commit watching
 * silent del.icio.us link saving
 * tolerable channel fault recovery
 
@@ -38,7 +38,7 @@ See the Kirby class for commands.
 
 You can use a crontask to keep Kirby alive at all times.
 
-  * * * * * bash -c 'cd /working/directory; kirby [options...] &> /dev/null' 
+  * * * * * bash -c 'cd /working/directory; kirby -d [options...] &> /dev/null' 
 
 == Reporting problems
 
