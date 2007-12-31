@@ -1,4 +1,6 @@
 
+v4.2. Add channel logging; clean up options handling; fix docs.
+
 v4.1. Watch atom feeds for git commits [lifo].
 
 v4. Documentation; Rakefile. Shouldn't have bumped the version, but all right.

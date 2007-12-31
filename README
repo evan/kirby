@@ -25,12 +25,13 @@ Kirby is considered feature-locked.
 
 == Usage
 
-Run <tt>kirby [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
+Run <tt>kirby [nick] [channel] [server] [optional del.icio.us name] [optional del.icio.us password]</tt>. 
 
-Optional parameters:
-<tt>-d</tt>:: Daemonize.
-<tt>-no-d</tt>:: Don't daemonize.
+Optional post-parameters:
+<tt>--daemon</tt>:: Daemonize.
 <tt>--silent</tt>:: Never speak, even for errors.
+<tt>--log</tt>:: Log channel chatter to a file.
+<tt>--debug</tt>:: Debug mode.
 
 See the Kirby class for commands.
 
@@ -38,7 +39,7 @@ See the Kirby class for commands.
 
 You can use a crontask to keep Kirby alive at all times.
 
-  * * * * * bash -c 'cd /working/directory; kirby -d [options...] &> /dev/null' 
+  * * * * * bash -c 'cd /working/directory; kirby mybot mychannel irc.freenode.net --daemon &> /dev/null' 
 
 == Reporting problems
 

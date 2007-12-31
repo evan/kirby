@@ -10,52 +10,79 @@ In-channel commands:
 class Kirby
   include Singleton
 
-  PATH = Pathname.new(".").dirname.realpath.to_s
-  STORE = PATH + '/kirby.repositories'
-  ATOM  = PATH + '/kirby.atoms'
-  PIDFILE = PATH + '/kirby.pid'
+  attr_reader :config  
   
-  NICK = (ARGV[1] or "kirby-dev")
-  CHANNEL = ("#" + (ARGV[2] or "kirby-dev"))
-  SERVER = (ARGV[3] or "irc.freenode.org")
-  DELICIOUS_USER, DELICIOUS_PASS = ARGV[4], ARGV[5]
-  SILENT = ARGV[6] == "--silent"
+  def config=(opts = {})
+    path = File.expand_path(".").to_s
+    # Defaults
+    @config ||= {
+      :svns => "#{path}/kirby.svns",
+      :atoms => "#{path}/kirby.atoms",
+      :pidfile => "#{path}/kirby.pid",
+      :nick => "kirby-dev",
+      :channel => 'kirby-dev',
+      :server => "irc.freenode.org",
+      :delicious_user => nil,
+      :delicious_pass => nil,
+      :silent => false,
+      :log => false,
+      :logfile => "#{path}/kirby.log",
+      :time_format => '%Y/%m/%d %H:%M:%S',
+      :debug => false
+    }
+    
+    # Nicely merge current options
+    opts.each do |key, value|
+      config[key] = value if value
+    end
+  end
   
   # Connect and reconnect to the server  
-  def restart
-    $store = (YAML.load_file STORE rescue {})
-    $atom  = (YAML.load_file ATOM rescue {})
+  def restart    
+    log "Restarting"
+    puts config.inspect if config[:debug]
+      
+    @svns = (YAML.load_file config[:svns] rescue {})
+    @atoms  = (YAML.load_file config[:atoms] rescue {})
+
     @socket.close if @socket
     connect
     listen
   end
   
   # Connect to the IRC server.
-  def connect
-    @socket = TCPSocket.new(SERVER, 6667)
-    write "USER #{[NICK]*3*" "} :#{NICK}"
-    write "NICK #{NICK}"
-    write "JOIN #{CHANNEL}"
+  def connect    
+    log "Connecting"
+    @socket = TCPSocket.new(config[:server], 6667)
+    write "USER #{config[:nick]} #{config[:nick]} #{config[:nick]} :#{config[:nick]}"
+    write "NICK #{config[:nick]}"
+    write "JOIN ##{config[:channel]}"
   end
   
   # The event loop. Waits for socket traffic, and then responds to it. The server sends <tt>PING</tt> every 3 minutes, which means we don't need a separate thread to check for svn updates. All we do is wake on ping (or channel talking).
   def listen
     @socket.each do |line|
-#      puts "GOT: #{line.inspect}"
-      poll unless SILENT
+      puts "GOT: #{line.inspect}" if config[:debug]
+      poll if !config[:silent]
       case line.strip
-        when /^PING/ then write line.sub("PING", "PONG")[0..-3]
-        when /^ERROR/, /KICK #{CHANNEL} #{NICK} / then restart unless line =~ /PRIVMSG/
-        else 
-          if msg = line[/ PRIVMSG #{CHANNEL} \:(.+)/, 1]
+        when /^PING/
+          write line.sub("PING", "PONG")[0..-3]
+        when /^ERROR/, /KICK ##{config[:channel]} #{config[:nick]} / 
+          restart unless line =~ /PRIVMSG/
+        when /:(.+?)!.* PRIVMSG ##{config[:channel]} \:\001ACTION (.+)\001/
+          log "* #{$1} #{$2}"
+        when /:(.+?)!.* PRIVMSG ##{config[:channel]} \:(.+)/
+          nick, msg = $1, $2          
+          log "<#{nick}> #{msg}"
+          if !config[:silent]
             case msg
               when /^>>\s*(.+)/ then try $1.chop
-              when /^#{NICK}/ then say "Usage: '>> CODE'. Say 'reset_irb' for a clean session. Say 'add_svn [repository_url]' to watch an svn repository and add_atom [atom_feed_url] to watch an atom feed"
+              when /^#{config[:nick]}/ then say "Usage: '>> CODE'. Say 'reset_irb' for a clean session. Say 'add_svn [repository_url]' to watch an SVN repository, or 'add_atom [atom_feed_url]' to watch an atom feed, such as a Git repository."
               when /^reset_irb/ then reset_irb
-              when /^add_svn (.+?)(\s|\r|\n|$)/ then $store[$1] = 0 and say $store.inspect
-              when /^add_atom (.+?)(\s|\r|\n|$)/ then $atom[$1] = '' and say $atom.inspect
-            end unless SILENT
-            post($1) if DELICIOUS_PASS and msg =~ /(http:\/\/.*?)(\s|\r|\n|$)/ 
+              when /^add_svn (.+?)(\s|\r|\n|$)/ then @svns[$1] = 0 and say @svns.inspect
+              when /^add_atom (.+?)(\s|\r|\n|$)/ then @atoms[$1] = '' and say @atoms.inspect
+              when /(http:\/\/.*?)(\s|\r|\n|$)/ then post($1) if config[:delicious_pass] 
+            end
           end
       end
     end
@@ -65,56 +92,68 @@ class Kirby
   def write s
     raise RuntimeError, "No socket" unless @socket
     @socket.puts s += "\r\n"
-#    puts "WROTE: #{s.inspect}"
+    puts "WROTE: #{s.inspect}" if config[:debug]
+  end
+  
+  # Write a string to the log, if the logfile is open.
+  def log s
+    # Open log, if necessary
+    if config[:log]
+      puts "LOG: #{s}" if config[:debug]
+      File.open(config[:logfile], 'w+') do |f|
+        f.puts "#{Time.now.strftime(config[:time_format])} #{s}"
+      end
+    end
   end
   
   # Eval a piece of code in the <tt>irb</tt> environment.
   def try s
-    reset_irb unless $session
+    reset_irb unless @session
     try_eval(s).select{|e| e !~ /^\s+from .+\:\d+(\:|$)/}.each {|e| say e} rescue say "session error"
   end
   
   # Say something in the channel.
   def say s
-    write "PRIVMSG #{CHANNEL} :#{s[0..450]}"
+    write "PRIVMSG ##{config[:channel]} :#{s[0..450]}"
+    log "<#{config[:nick]}> #{s}"
     sleep 1
   end
     
   # Get a new <tt>irb</tt> session.
   def reset_irb
     say "Began new irb session"
-    $session = try_eval("!INIT!IRB!")
+    @session = try_eval("!INIT!IRB!")
   end
   
   # Inner loop of the try method.
   def try_eval s
     reset_irb and return [] if s.strip == "exit"
     result = open("http://tryruby.hobix.com/irb?cmd=#{CGI.escape(s)}", 
-            {'Cookie' => "_session_id=#{$session}"}).read
+            {'Cookie' => "_session_id=#{@session}"}).read
     result[/^Your session has been closed/] ? (reset_irb and try_eval s) : result.split("\n")
   end
   
-  # Look for svn changes.
+  # Look for SVN changes. Note that Rubyforge polls much better if you use the http:// protocol instead of the svn:// protocol for your repository.
   def poll
     return unless (Time.now - $last_poll > 15 rescue true)
     $last_poll = Time.now    
-    $store.each do |repo, last|
+    @svns.each do |repo, last|
       (Hpricot(`svn log #{repo} -rHEAD:#{last} --limit 10 --xml`)/:logentry).reverse[1..-1].each do |ci|
-        $store[repo] = rev = ci.attributes['revision'].to_i
+        @svns[repo] = rev = ci.attributes['revision'].to_i
         say "Commit #{rev} to #{repo.split("/").last} by #{(ci/:author).text}: #{(ci/:msg).text}"
       end rescue nil
     end
-    File.open(STORE, 'w') {|f| f.puts YAML.dump($store)}
+    File.open(config[:svns], 'w') {|f| f.puts YAML.dump(@svns)}
     
-    $atom.each do |feed, last|
+    @atoms.each do |feed, last|
       begin
         e = (Hpricot(open(feed))/:entry).first
-        $atom[feed] = link = e.at("link")['href']
+        @atoms[feed] = link = e.at("link")['href']
         say "#{(e/:title).text} by #{((e/:author)/:name).text} : #{link}" unless link == last
       rescue
       end
     end
-    File.open(ATOM, 'w') {|f| f.puts YAML.dump($atom)}
+    File.open(config[:atoms], 'w') {|f| f.puts YAML.dump(@atoms)}
   end
   
   # Post a url to the del.icio.us account.
@@ -128,7 +167,7 @@ class Kirby
       http.use_ssl = true      
       http.start do |http|
         req = Net::HTTP::Get.new('/v1/posts/add?' + query.map{|k,v| "#{k}=#{CGI.escape(v)}"}.join('&'))
-        req.basic_auth DELICIOUS_USER, DELICIOUS_PASS
+        req.basic_auth config[:delicious_user], config[:delicious_pass]
         http.request(req)
       end.body
     end

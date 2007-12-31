@@ -1,22 +1,47 @@
 #!/usr/bin/env ruby
 
 =begin rdoc
-Run <tt>kirby [nick] [channel] [server] [delicious_name] [delicious_password]</tt>. 
+Run <tt>kirby [nick] [channel] [server] [optional del.icio.us name] [optional del.icio.us password]</tt>. 
 
-Optional parameters:
-<tt>-d</tt>:: Daemonize.
-<tt>-no-d</tt>:: Don't daemonize.
+Optional post-parameters:
+<tt>--daemon</tt>:: Daemonize.
 <tt>--silent</tt>:: Never speak, even for errors.
+<tt>--log</tt>:: Log channel chatter to a file.
+<tt>--debug</tt>:: Debug mode.
 =end
 
 require 'rubygems'
-require 'kirby'
+require 'daemons'
 
-pid = open(Kirby::PIDFILE).gets.chomp rescue nil
+begin
+  require "#{File.dirname(__FILE__)}/../lib/kirby"
+rescue LoadError
+  require 'kirby'
+end
+
+def option?(opt)
+  ARGV.include?("--#{opt}")
+end
+
+def param(arg)
+  arg unless arg =~ /^--/
+end
+
+Kirby.instance.config= {
+  :nick => param(ARGV[0]), 
+  :channel => param(ARGV[1]), 
+  :server => param(ARGV[2]), 
+  :delicious_name => param(ARGV[3]), 
+  :delicious_pass => param(ARGV[4]),
+  :silent => option?("silent"),
+  :debug => option?("debug"),
+  :log => option?("log")
+}
+
+pid = open(Kirby.instance.config[:pidfile]).gets.chomp rescue nil
 
 if !pid or `ps #{pid}`.split("\n").size < 2
-  puts "Starting"
-  Daemons.daemonize if ARGV[0] == '-d'  #:ontop => true
-  open(Kirby::PIDFILE, 'w') {|f| f.puts $$}
+  Daemons.daemonize if option? "daemon" 
+  open(Kirby.instance.config[:pidfile], 'w') {|f| f.puts $$}  
   Kirby.instance.restart
 end
