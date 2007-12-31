@@ -145,7 +145,7 @@ class Kirby
       (Hpricot(`svn log #{repo} -rHEAD:#{last} --limit 10 --xml`)/:logentry).reverse[1..-1].each do |ci|
         @svns[repo] = rev = ci.attributes['revision'].to_i
         project = case repo
-          when /^http://(\w+)\.rubyforge/ then $1
+          when /^http:\/\/(\w+)\.rubyforge/ then $1
           else
             repo.split(/\.\//).reject { |path| ['trunk', 'svn', 'org', 'com', 'net', nil].include? path }.last
         end
@@ -167,6 +167,7 @@ class Kirby
   
   # Post a url to the del.icio.us account.
   def post url
+    puts "POST: #{url}" if config[:debug]
     query = {:url => url,
       :description => (((Hpricot(open(url))/:title).first.innerHTML or url) rescue url),
       :tags => (Hpricot(open("http://del.icio.us/url/check?url=#{CGI.escape(url)}"))/'.alphacloud'/:a).map{|s| s.innerHTML}.join(" "),
@@ -174,11 +175,12 @@ class Kirby
     begin
       http = Net::HTTP.new('api.del.icio.us', 443)         
       http.use_ssl = true      
-      http.start do |http|
+      response = http.start do |http|
         req = Net::HTTP::Get.new('/v1/posts/add?' + query.map{|k,v| "#{k}=#{CGI.escape(v)}"}.join('&'))
         req.basic_auth config[:delicious_user], config[:delicious_pass]
         http.request(req)
       end.body
+      puts "POST: #{response.inspect}" if config[:debug]
     end
   end
   

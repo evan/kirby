@@ -31,7 +31,7 @@ end
   :nick => param(ARGV[0]), 
   :channel => param(ARGV[1]), 
   :server => param(ARGV[2]), 
-  :delicious_name => param(ARGV[3]), 
+  :delicious_user => param(ARGV[3]), 
   :delicious_pass => param(ARGV[4]),
   :silent => option?("silent"),
   :debug => option?("debug"),
