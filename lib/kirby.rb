@@ -144,7 +144,7 @@ class Kirby
     @svns.each do |repo, last|
       (Hpricot(`svn log #{repo} -rHEAD:#{last} --limit 10 --xml`)/:logentry).reverse[1..-1].each do |ci|
         @svns[repo] = rev = ci.attributes['revision'].to_i
-        project = repo.split(/\.\//).reject do |path| 
+        project = repo.split(/\.|\//).reject do |path| 
           ['trunk', 'rubyforge', 'svn', 'org', 'com', 'net', 'http:', nil].include? path
         end.last
         say "Commit #{rev} to #{project || repo} by #{(ci/:author).text}: #{(ci/:msg).text}"
@@ -156,7 +156,7 @@ class Kirby
       begin
         e = (Hpricot(open(feed))/:entry).first
         @atoms[feed] = link = e.at("link")['href']
-        say "Commit #{link} to #{(e/:title).text} by #{((e/:author)/:name).text}" unless link == last
+        say "Commit #{link} by #{((e/:author)/:name).text}: #{(e/:title).text}" unless link == last
       rescue
       end
     end
