@@ -142,6 +142,7 @@ class Kirby
     return unless (Time.now - $last_poll > 60 rescue true)
     $last_poll = Time.now    
     @svns.each do |repo, last|
+      puts "POLL: #{repo}" if config[:debug]
       (Hpricot(`svn log #{repo} -rHEAD:#{last} --limit 10 --xml`)/:logentry).reverse[1..-1].each do |ci|
         @svns[repo] = rev = ci.attributes['revision'].to_i
         project = repo.split(/\.|\//).reject do |path| 
@@ -153,6 +154,7 @@ class Kirby
     File.open(config[:svns], 'w') {|f| f.puts YAML.dump(@svns)}
     
     @atoms.each do |feed, last|
+      puts "POLL: #{feed}" if config[:debug]
       begin
         e = (Hpricot(open(feed))/:entry).first
         @atoms[feed] = link = e.at("link")['href']
