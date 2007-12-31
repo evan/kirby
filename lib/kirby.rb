@@ -2,31 +2,34 @@
 
 =begin rdoc
 In-channel commands:
-<tt>>> [string of code]</tt>:: Evaluate some Ruby code.
-<tt>reset_irb</tt>:: Reset the <tt>irb</tt> session.
-<tt>add_svn [repository_url]</tt>:: Watch an svn repository for changes.
+<tt>'>> CODE'</tt>:: evaluate code in IRB.
+<tt>'reset_irb'</tt>:: get a clean IRB session.
+<tt>'add_svn [repository_url]'</tt>:: watch an SVN repository.
+<tt>'add_atom [atom_feed_url]'</tt>:: watch an atom feed, such as a Git repository
 =end
 
 class Kirby
-  include Singleton
 
   attr_reader :config  
   
-  def config=(opts = {})
-    path = File.expand_path(".").to_s
+  def initialize(opts = {})
+
     # Defaults
+    path = File.expand_path(".").to_s
+    nick = opts[:nick] || config[:nick] || "kirby-dev"
+
     @config ||= {
-      :svns => "#{path}/kirby.svns",
-      :atoms => "#{path}/kirby.atoms",
-      :pidfile => "#{path}/kirby.pid",
-      :nick => "kirby-dev",
+      :svns => "#{path}/#{nick}.svns",
+      :atoms => "#{path}/#{nick}.atoms",
+      :pidfile => "#{path}/#{nick}.pid",
+      :nick => nick,
       :channel => 'kirby-dev',
       :server => "irc.freenode.org",
       :delicious_user => nil,
       :delicious_pass => nil,
       :silent => false,
       :log => false,
-      :logfile => "#{path}/kirby.log",
+      :logfile => "#{path}/#{nick}.log",
       :time_format => '%Y/%m/%d %H:%M:%S',
       :debug => false
     }
@@ -77,7 +80,8 @@ class Kirby
           if !config[:silent]
             case msg
               when /^>>\s*(.+)/ then try $1.chop
-              when /^#{config[:nick]}/ then say "Usage: '>> CODE'. Say 'reset_irb' for a clean session. Say 'add_svn [repository_url]' to watch an SVN repository, or 'add_atom [atom_feed_url]' to watch an atom feed, such as a Git repository."
+              when /^#{config[:nick]}:/ 
+                ["Usage:",  "  '>> CODE': evaluate code in IRB", "  'reset_irb': get a clean IRB session", "  'add_svn [repository_url]': watch an SVN repository", "  'add_atom [atom_feed_url]': watch an atom feed, such as a Git repository"].each {|s| say s}
               when /^reset_irb/ then reset_irb
               when /^add_svn (.+?)(\s|\r|\n|$)/ then @svns[$1] = 0 and say @svns.inspect
               when /^add_atom (.+?)(\s|\r|\n|$)/ then @atoms[$1] = '' and say @atoms.inspect

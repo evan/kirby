@@ -27,7 +27,7 @@ def param(arg)
   arg unless arg =~ /^--/
 end
 
-Kirby.instance.config= {
+@kirby = Kirby.new(
   :nick => param(ARGV[0]), 
   :channel => param(ARGV[1]), 
   :server => param(ARGV[2]), 
@@ -36,12 +36,12 @@ Kirby.instance.config= {
   :silent => option?("silent"),
   :debug => option?("debug"),
   :log => option?("log")
-}
+)
 
-pid = open(Kirby.instance.config[:pidfile]).gets.chomp rescue nil
+pid = open(@kirby.config[:pidfile]).gets.chomp rescue nil
 
 if !pid or `ps #{pid}`.split("\n").size < 2
   Daemons.daemonize if option? "daemon" 
-  open(Kirby.instance.config[:pidfile], 'w') {|f| f.puts $$}  
-  Kirby.instance.restart
+  open(@kirby.config[:pidfile], 'w') {|f| f.puts $$}  
+  @kirby.restart
 end

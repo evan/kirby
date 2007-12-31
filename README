@@ -33,13 +33,13 @@ Optional post-parameters:
 <tt>--log</tt>:: Log channel chatter to a file.
 <tt>--debug</tt>:: Debug mode.
 
-See the Kirby class for commands.
+See the Kirby class for in-channel commands.
 
 == Crontab example
 
 You can use a crontask to keep Kirby alive at all times.
 
-  * * * * * bash -c 'cd /working/directory; kirby mybot mychannel irc.freenode.net --daemon &> /dev/null' 
+  * * * * * bash -c 'cd /working/directory; kirby mynick mychannel irc.freenode.net --daemon &> /dev/null' 
 
 == Reporting problems
 
