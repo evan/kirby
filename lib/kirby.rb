@@ -104,7 +104,7 @@ class Kirby
     # Open log, if necessary
     if config[:log]
       puts "LOG: #{s}" if config[:debug]
-      File.open(config[:logfile], 'w+') do |f|
+      File.open(config[:logfile], 'a') do |f|
         f.puts "#{Time.now.strftime(config[:time_format])} #{s}"
       end
     end
