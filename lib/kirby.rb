@@ -144,12 +144,10 @@ class Kirby
     @svns.each do |repo, last|
       (Hpricot(`svn log #{repo} -rHEAD:#{last} --limit 10 --xml`)/:logentry).reverse[1..-1].each do |ci|
         @svns[repo] = rev = ci.attributes['revision'].to_i
-        project = case repo
-          when /^http:\/\/(\w+)\.rubyforge/ then $1
-          else
-            repo.split(/\.\//).reject { |path| ['trunk', 'svn', 'org', 'com', 'net', nil].include? path }.last
-        end
-        say "Commit #{rev} to #{project} by #{(ci/:author).text}: #{(ci/:msg).text}"
+        project = repo.split(/\.\//).reject do |path| 
+          ['trunk', 'rubyforge', 'svn', 'org', 'com', 'net', 'http:', nil].include? path
+        end.last
+        say "Commit #{rev} to #{project || repo} by #{(ci/:author).text}: #{(ci/:msg).text}"
       end rescue nil
     end
     File.open(config[:svns], 'w') {|f| f.puts YAML.dump(@svns)}
