@@ -139,7 +139,7 @@ class Kirby
   
   # Look for SVN changes. Note that Rubyforge polls much better if you use the http:// protocol instead of the svn:// protocol for your repository.
   def poll
-    return unless (Time.now - $last_poll > 15 rescue true)
+    return unless (Time.now - $last_poll > 60 rescue true)
     $last_poll = Time.now    
     @svns.each do |repo, last|
       (Hpricot(`svn log #{repo} -rHEAD:#{last} --limit 10 --xml`)/:logentry).reverse[1..-1].each do |ci|
