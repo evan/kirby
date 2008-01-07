@@ -25,9 +25,14 @@ Kirby is considered feature-locked.
 
 == Usage
 
-Run <tt>kirby [nick] [channel] [server] [optional del.icio.us name] [optional del.icio.us password]</tt>. 
+To start a basic Kirby from the command line:
 
-Optional post-parameters:
+  cd working/directory
+  kirby mynick mychannel myserver.org [delicious_user] [delicious_pass] [--options]
+  
+Logs and repository histories get saved to the working directory.
+
+Available post-parameters are:
 <tt>--daemon</tt>:: Daemonize.
 <tt>--silent</tt>:: Never speak, even for errors.
 <tt>--log</tt>:: Log channel chatter to a file.
@@ -37,9 +42,10 @@ See the Kirby class for in-channel commands.
 
 == Crontab example
 
-You can use a crontask to keep Kirby alive at all times.
+You can use a crontask to keep Kirby alive at all times. For example: 
 
-  * * * * * bash -c 'cd /working/directory; kirby mynick mychannel irc.freenode.net --daemon &> /dev/null' 
+  * * * * * bash -c 'cd /working/directory; kirby mynick mychannel irc.freenode.net \ 
+  --daemon --log --silent &> /dev/null' 
 
 == Reporting problems
 

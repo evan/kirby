@@ -2,10 +2,10 @@
 
 =begin rdoc
 In-channel commands:
-<tt>'>> CODE'</tt>:: evaluate code in IRB.
-<tt>'reset_irb'</tt>:: get a clean IRB session.
-<tt>'add_svn [repository_url]'</tt>:: watch an SVN repository.
-<tt>'add_atom [atom_feed_url]'</tt>:: watch an atom feed, such as a Git repository
+<tt>>> CODE</tt>:: evaluate code in IRB.
+<tt>reset_irb</tt>:: get a clean IRB session.
+<tt>add_svn [repository_url]</tt>:: watch an SVN repository.
+<tt>add_atom [atom_feed_url]</tt>:: watch an atom feed, such as a Git repository
 
 To remove a repository, manually kill the bot and delete the line from <tt>nick.svns</tt> or <tt>nick.atoms</tt> in the bot's working directory. Then restart the bot.
 =end
@@ -14,6 +14,7 @@ class Kirby
 
   attr_reader :config  
   
+  # Make a new Kirby. Will not connect to the server until you call connect().
   def initialize(opts = {})
 
     # Defaults
