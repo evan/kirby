@@ -82,7 +82,7 @@ class Kirby
           log "<#{nick}> #{msg}"
           if !config[:silent]
             case msg
-              when /^>>\s*(.+)/ then try $1.chop
+              when /^>>\s*(.+)/ then try $1
               when /^#{config[:nick]}:/ 
                 ["Usage:",  "  '>> CODE': evaluate code in IRB", "  'reset_irb': get a clean IRB session", "  'add_svn [repository_url]': watch an SVN repository", "  'add_atom [atom_feed_url]': watch an atom feed, such as a Git repository"].each {|s| say s}
               when /^reset_irb/ then reset_irb
