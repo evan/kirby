@@ -35,10 +35,10 @@ To start a basic Kirby from the command line:
 Logs and repository histories get saved to the working directory.
 
 Available post-parameters are:
-<tt>--daemon</tt>:: Daemonize.
-<tt>--silent</tt>:: Never speak, even for errors.
-<tt>--log</tt>:: Log channel chatter to a file.
-<tt>--debug</tt>:: Debug mode.
+<tt>----daemon</tt>:: Daemonize.
+<tt>----silent</tt>:: Never speak, even for errors.
+<tt>----log</tt>:: Log channel chatter to a file.
+<tt>----debug</tt>:: Debug mode.
 
 See the Kirby class for in-channel commands.
 
