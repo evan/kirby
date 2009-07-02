@@ -1,4 +1,4 @@
-%w[open3 daemons socket singleton open-uri cgi pathname hpricot yaml net/https].map{|s| require s}
+%w[open3 daemons socket singleton open-uri cgi pathname hpricot yaml net/https timeout].map{|s| require s}
 
 =begin rdoc
 In-channel commands:
@@ -88,7 +88,7 @@ class Kirby
               when /^reset_irb/ then reset_irb
               when /^add_svn (.+?)(\s|\r|\n|$)/ then @svns[$1] = 0 and say @svns.inspect
               when /^add_atom (.+?)(\s|\r|\n|$)/ then @atoms[$1] = '' and say @atoms.inspect
-              when /(http:\/\/.*?)(\s|\r|\n|$)/ then post($1) if config[:delicious_pass] 
+              when /(http(s|):\/\/.*?)(\s|\r|\n|$)/ then post($1) if config[:delicious_pass] 
             end
           end
       end
@@ -168,23 +168,43 @@ class Kirby
     File.open(config[:atoms], 'w') {|f| f.puts YAML.dump(@atoms)}
   end
   
-  # Post a url to the del.icio.us account.
+  # Post a url to the del.i	cio.us account.
   def post url
-    puts "POST: #{url}" if config[:debug]
-    query = {:url => url,
-      :description => (((Hpricot(open(url))/:title).first.innerHTML or url) rescue url),
-      :tags => (Hpricot(open("http://del.icio.us/url/check?url=#{CGI.escape(url)}"))/'.alphacloud'/:a).map{|s| s.innerHTML}.join(" "),
-      :replace => 'yes' }
-    begin
+    Timeout.timeout(60) do
+      puts "POST: #{url}" if config[:debug]
+  
+      tags = (Hpricot(open("http://del.icio.us/url/check?url=#{CGI.escape(url)}"))/
+      '#top-tags'/'li')[0..10].map do |li| 
+        (li/'span').innerHTML[/(.*?)<em/, 1]
+      end.join(" ")
+      puts "POST-TAGS: #{tags}" if config[:debug]
+      
+      description = begin
+        Timeout.timeout(5) do 
+          (((Hpricot(open(url))/:title).first.innerHTML or url) rescue url)
+        end
+      rescue Timeout::Error
+        puts "POST: URL timeout" if config[:debug]
+        url
+      end
+      
+      query = { :url => url, :description => description, :tags => tags, :replace => 'yes' }
+
       http = Net::HTTP.new('api.del.icio.us', 443)         
       http.use_ssl = true      
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       response = http.start do |http|
-        req = Net::HTTP::Get.new('/v1/posts/add?' + query.map{|k,v| "#{k}=#{CGI.escape(v)}"}.join('&'))
+        post_url = '/v1/posts/add?' + query.map {|k,v| "#{k}=#{CGI.escape(v)}"}.join('&')
+        puts "POST: post url #{post_url}" if config[:debug]
+        req = Net::HTTP::Get.new(post_url, {"User-Agent" => "Kirby"})
         req.basic_auth config[:delicious_user], config[:delicious_pass]
         http.request(req)
       end.body
+
       puts "POST: #{response.inspect}" if config[:debug]
     end
+  rescue Exception => e
+    puts "POST: #{e.inspect}" if config[:debug]
   end
   
 end
