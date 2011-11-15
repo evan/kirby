@@ -3,11 +3,15 @@ Kirby
 
 A super-clean IRC bot.
 
+== DEPRECATED
+
+No replacement.
+
 == License
 
-Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file. 
+Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
 
-The public certificate for the gem is here[http://blog.evanweaver.com/files/evan_weaver-original-public_cert.pem]. 
+The public certificate for the gem is here[http://blog.evanweaver.com/files/evan_weaver-original-public_cert.pem].
 
 If you use this software, please {make a donation}[http://blog.evanweaver.com/donate/], or {recommend Evan}[http://www.workingwithrails.com/person/7739-evan-weaver] at Working with Rails.
 
@@ -19,7 +23,7 @@ If you use this software, please {make a donation}[http://blog.evanweaver.com/do
 * silent del.icio.us link saving
 * tolerable channel fault recovery
 
-Kirby is considered feature-locked. 
+Kirby is considered feature-locked.
 
 == Installation
 
@@ -31,7 +35,7 @@ To start a basic Kirby from the command line:
 
   cd working/directory
   kirby mynick mychannel myserver.org [delicious_user] [delicious_pass] [--options]
-  
+
 Logs and repository histories get saved to the working directory.
 
 Available post-parameters are:
@@ -44,10 +48,10 @@ See the Kirby class for in-channel commands.
 
 == Crontab example
 
-You can use a crontask to keep Kirby alive at all times. For example: 
+You can use a crontask to keep Kirby alive at all times. For example:
 
-  * * * * * bash -c 'cd /working/directory; kirby mynick mychannel irc.freenode.net \ 
-  --daemon --log --silent &> /dev/null' 
+  * * * * * bash -c 'cd /working/directory; kirby mynick mychannel irc.freenode.net \
+  --daemon --log --silent &> /dev/null'
 
 == Reporting problems
 
